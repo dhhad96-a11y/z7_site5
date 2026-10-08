@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>z7 — ADHAM</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,system-ui,sans-serif;background:#07090d;color:#f5f7fb}
+.hidden{display:none!important}.screen{min-height:100vh}
+.login{display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at top,#18202d 0,#07090d 55%)}
+.card{width:min(420px,100%);background:#10151d;border:1px solid #252d39;border-radius:20px;padding:28px;box-shadow:0 18px 60px #0008}
+.logo{font-size:38px;font-weight:900;letter-spacing:2px;margin-bottom:6px}.sub{color:#8e99aa;margin-bottom:25px}
+label{display:block;font-size:13px;color:#aeb8c7;margin:15px 0 7px}
+input,select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #303948;background:#0a0e14;color:#fff;outline:none}
+input:focus,select:focus{border-color:#65738a}.btn{width:100%;padding:13px;border:0;border-radius:12px;background:#f2f4f7;color:#080a0d;font-weight:800;cursor:pointer;margin-top:16px}
+.btn.secondary{background:#1a212c;color:#fff;border:1px solid #303948}.error{color:#ff7b7b;font-size:13px;margin-top:12px}
+header{height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #202733;background:#0b0f15;position:sticky;top:0;z-index:5}
+.brand{font-size:25px;font-weight:900;letter-spacing:2px}.nav{display:flex;gap:8px}.nav button{background:#151b24;color:#dce2eb;border:1px solid #2a3340;padding:9px 12px;border-radius:10px;cursor:pointer}
+main{max-width:1100px;margin:auto;padding:24px}.hero{padding:24px;border:1px solid #222b36;border-radius:18px;background:linear-gradient(135deg,#111822,#0b0e14)}
+h1,h2{margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:18px}
+.panel{background:#0f141c;border:1px solid #252e3a;border-radius:16px;padding:18px}.value{font-size:30px;font-weight:900;margin-top:8px}
+.product{display:flex;align-items:center;justify-content:space-between;gap:10px}.buy{width:auto;margin:0;padding:10px 14px}
+.note{font-size:13px;color:#8d98a8;line-height:1.5}.list{display:grid;gap:10px}.row{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid #242d39;border-radius:12px;background:#0b1016}
+.badge{font-size:11px;padding:5px 8px;border-radius:8px;background:#1b2634;color:#c7d2e1}.toast{position:fixed;right:16px;bottom:16px;background:#e9edf2;color:#080a0d;padding:12px 16px;border-radius:12px;font-weight:700;display:none}
+.conditions{margin-top:20px}.conditions li{margin:8px 0;color:#c1cad7}
+.small{font-size:12px;color:#7e8999}
+</style>
+</head>
+<body>
+<section id="login" class="screen login">
+  <div class="card">
+    <div class="logo">z7</div>
+    <div class="sub">Owner panel demo</div>
+    <label>Username</label>
+    <input id="username" autocomplete="username" placeholder="ADHAM">
+    <label>Password</label>
+    <input id="password" type="password" autocomplete="current-password" placeholder="Password">
+    <button class="btn" onclick="login()">Login</button>
+    <div id="loginError" class="error"></div>
+  </div>
+</section>
+
+<section id="app" class="screen hidden">
+<header>
+  <div class="brand">z7</div>
+  <nav class="nav">
+    <button onclick="show('home')">Home</button>
+    <button onclick="show('account')">Account</button>
+    <button onclick="logout()">Exit</button>
+  </nav>
+</header>
+<main>
+  <section id="home">
+    <div class="hero">
+      <h1>Welcome, ADHAM</h1>
+      <div class="note">Owner account • Demo version running locally in Chrome.</div>
+    </div>
+    <div class="grid">
+      <div class="panel"><div class="small">Account</div><div class="value">ADHAM</div></div>
+      <div class="panel"><div class="small">Balance</div><div id="balanceHome" class="value">$0</div></div>
+      <div class="panel"><div class="small">Role</div><div class="value">Owner</div></div>
+    </div>
+
+    <div class="panel conditions">
+      <h2>3 Conditions</h2>
+      <ul>
+        <li>Account must be active.</li>
+        <li>Balance is checked before purchase.</li>
+        <li><b>Add key</b> — each purchased code deducts <b>$1</b>.</li>
+      </ul>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <h2>Codes / Products</h2>
+      <div id="products" class="list"></div>
+    </div>
+  </section>
+
+  <section id="account" class="hidden">
+    <div class="hero">
+      <h1>Account</h1>
+      <div class="note">Owner account details</div>
+    </div>
+    <div class="grid">
+      <div class="panel"><div class="small">Username</div><div class="value">ADHAM</div></div>
+      <div class="panel"><div class="small">Balance</div><div id="balanceAccount" class="value">$0</div></div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <h2>Add balance</h2>
+      <input id="addAmount" type="number" min="1" step="1" placeholder="Amount">
+      <button class="btn" onclick="addBalance()">Done</button>
+      <p class="note">This demo stores the balance in your browser using localStorage.</p>
+    </div>
+  </section>
+</main>
+</section>
+<div id="toast" class="toast"></div>
+
+<script>
+const OWNER = {
+  username: "ADHAM",
+  iterations: 310000,
+  salt: "941e7baa9a92acb5adcc76324cff2ced",
+  hash: "7658f0829f68de9b5513a88d67c118480d0bcd588a34d545da4d657163a5bf7f"
+};
+const catalog = [{"name": "DEVIL PANEL 1 🎮", "price": 1}, {"name": "DEVIL PANEL 3 HEUR🎯", "price": 1}, {"name": "DEVIL PANEL 6 HEUR", "price": 1}, {"name": "🟡 DRIP CLIENT - APK MOD", "price": 1}];
+let balance = Number(localStorage.getItem("z7_balance") || "0");
+
+function enc(s){return new TextEncoder().encode(s)}
+function toHex(buf){return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function pbkdf2(password){
+  const key=await crypto.subtle.importKey("raw",enc(password),"PBKDF2",false,["deriveBits"]);
+  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:enc(OWNER.salt),iterations:OWNER.iterations,hash:"SHA-256"},key,256);
+  return toHex(bits);
+}
+async function login(){
+  const u=document.getElementById("username").value.trim();
+  const p=document.getElementById("password").value;
+  const err=document.getElementById("loginError");
+  err.textContent="";
+  if(u.toUpperCase()!=="ADHAM"){err.textContent="Invalid username or password.";return}
+  const h=await pbkdf2(p);
+  if(h!==OWNER.hash){err.textContent="Invalid username or password.";return}
+  sessionStorage.setItem("z7_logged","1");
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  render();
+}
+function logout(){
+  sessionStorage.removeItem("z7_logged");
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("login").classList.remove("hidden");
+  document.getElementById("password").value="";
+}
+function show(id){
+  document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  render();
+}
+function money(n){return "$"+Number(n).toFixed(2)}
+function render(){
+  balance=Number(localStorage.getItem("z7_balance") || "0");
+  document.getElementById("balanceHome").textContent=money(balance);
+  document.getElementById("balanceAccount").textContent=money(balance);
+  const box=document.getElementById("products");
+  if(!catalog.length){
+    box.innerHTML='<div class="note">No products were included in the exported catalog.</div>';
+    return;
+  }
+  box.innerHTML=catalog.map((p,i)=>{
+    const price=Number(p.price)||1;
+    return `<div class="row"><div><b>${escapeHtml(p.name)}</b><div class="small">Price: ${money(price)}</div></div><button class="btn buy" onclick="buy(${i})">Buy</button></div>`;
+  }).join("");
+}
+function buy(i){
+  const p=catalog[i]||{name:"Code",price:1};
+  if(balance<1){toast("Insufficient balance.");return}
+  balance-=1;
+  localStorage.setItem("z7_balance",String(balance));
+  toast("Purchased. $1 deducted from your balance.");
+  render();
+}
+function addBalance(){
+  const a=Number(document.getElementById("addAmount").value);
+  if(!Number.isFinite(a)||a<=0){toast("Enter a valid amount.");return}
+  balance+=a;
+  localStorage.setItem("z7_balance",String(balance));
+  document.getElementById("addAmount").value="";
+  toast("Balance added.");
+  render();
+}
+function toast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";
+  clearTimeout(window._toast);window._toast=setTimeout(()=>t.style.display="none",2200);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+if(sessionStorage.getItem("z7_logged")==="1"){
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+}
+render();
+</script>
+</body>
+</html>
